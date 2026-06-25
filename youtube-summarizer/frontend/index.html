@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subtexto — Resumen de videos de YouTube con IA</title>
+  <meta name="description" content="Convierte cualquier video de YouTube en un resumen claro en segundos, con IA." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- =================== SIDEBAR / HISTORIAL =================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-mark">CC</span>
+          Subtexto
+        </div>
+        <button class="icon-btn mobile-only" id="sidebarCloseBtn" aria-label="Cerrar historial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <button class="new-summary-btn" id="newSummaryBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo resumen
+      </button>
+
+      <div class="sidebar-section-label">Historial</div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty">Aún no tienes resúmenes. Pega el enlace de un video para empezar.</div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="text-btn" id="clearHistoryBtn">Borrar todo el historial</button>
+      </div>
+    </aside>
+
+    <div class="main-overlay" id="mainOverlay"></div>
+
+    <!-- =================== CONTENIDO PRINCIPAL =================== -->
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="sidebarOpenBtn" aria-label="Abrir historial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="topbar-title">Resumen de video con IA</div>
+        <button class="icon-btn" id="themeToggleBtn" aria-label="Cambiar tema claro/oscuro">
+          <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+          <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66 4.93 19.07M19.07 4.93l-1.41 1.41"/></svg>
+        </button>
+      </header>
+
+      <div class="main-content">
+        <!-- Hero / estado inicial -->
+        <div class="hero" id="heroSection">
+          <div class="hero-eyebrow"><span class="rec-dot"></span> Multi-agente · 6 idiomas</div>
+          <h1>Pega un video. Léelo en 20 segundos.</h1>
+          <p>Subtexto extrae la transcripción, la analiza con IA y te entrega un resumen ejecutivo, detallado o en viñetas — con palabras clave, entidades y sentimiento incluidos.</p>
+        </div>
+
+        <!-- Input deck -->
+        <section class="input-deck">
+          <div class="url-row">
+            <span class="rec-indicator" id="recIndicator"></span>
+            <input
+              id="videoUrlInput"
+              type="url"
+              inputmode="url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              autocomplete="off"
+            />
+            <button class="btn-primary" id="summarizeBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 3l14 9-14 9V3z"/></svg>
+              Resumir
+            </button>
+          </div>
+
+          <div class="deck-controls">
+            <select class="select-pill" id="languageSelect" aria-label="Idioma del resumen">
+              <option value="es">🇪🇸 Español</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="pt">🇵🇹 Português</option>
+            </select>
+
+            <select class="select-pill" id="summaryTypeSelect" aria-label="Tipo de resumen">
+              <option value="executive">Ejecutivo</option>
+              <option value="detailed">Detallado</option>
+              <option value="bullet_points">Viñetas</option>
+            </select>
+
+            <select class="select-pill" id="providerSelect" aria-label="Motor de IA">
+              <option value="openai">Motor: OpenAI</option>
+              <option value="anthropic">Motor: Claude</option>
+            </select>
+          </div>
+
+          <details class="translations-toggle">
+            <summary>+ Traducir también a otros idiomas</summary>
+            <div class="lang-chip-row" id="extraLangRow">
+              <button type="button" class="lang-chip" data-lang="es">ES</button>
+              <button type="button" class="lang-chip" data-lang="en">EN</button>
+              <button type="button" class="lang-chip" data-lang="fr">FR</button>
+              <button type="button" class="lang-chip" data-lang="de">DE</button>
+              <button type="button" class="lang-chip" data-lang="it">IT</button>
+              <button type="button" class="lang-chip" data-lang="pt">PT</button>
+            </div>
+          </details>
+        </section>
+
+        <!-- Loader estilo "captions en vivo" -->
+        <section class="caption-loader" id="captionLoader" hidden>
+          <div class="scrub-track"><div class="scrub-fill"></div></div>
+          <div class="caption-box">
+            <span id="captionText"></span><span class="cursor"></span>
+          </div>
+        </section>
+
+        <!-- Banner de error -->
+        <section class="error-banner" id="errorBanner" hidden></section>
+
+        <!-- Resultado -->
+        <section class="result" id="resultSection" hidden>
+          <div class="video-card">
+            <img id="resultThumb" src="" alt="" />
+            <div class="video-card-info">
+              <h2 id="resultTitle">—</h2>
+              <p id="resultChannel">—</p>
+              <div class="video-card-meta" id="resultMetaChips"></div>
+            </div>
+          </div>
+
+          <div class="tabs" id="summaryTypeTabs">
+            <button class="tab" data-type="executive">Ejecutivo</button>
+            <button class="tab" data-type="detailed">Detallado</button>
+            <button class="tab" data-type="bullet_points">Viñetas</button>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <span class="eyebrow">Resumen</span>
+              <div class="summary-actions">
+                <button class="icon-btn" id="copyBtn" title="Copiar al portapapeles" aria-label="Copiar al portapapeles">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button class="icon-btn" id="exportBtn" title="Exportar" aria-label="Exportar resumen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                </button>
+                <div class="export-options" id="exportOptions">
+                  <button data-format="pdf" type="button">Exportar a PDF</button>
+                  <button data-format="markdown" type="button">Exportar a Markdown</button>
+                  <button data-format="txt" type="button">Exportar a texto plano</button>
+                </div>
+              </div>
+            </div>
+            <div class="summary-body" id="summaryBody">—</div>
+            <div class="validation-note" id="validationNote"></div>
+          </div>
+
+          <div class="analysis-grid">
+            <div class="analysis-block">
+              <span class="eyebrow">Palabras clave</span>
+              <div class="chip-row" id="keywordsRow"></div>
+            </div>
+
+            <div class="analysis-block">
+              <span class="eyebrow">Tags</span>
+              <div class="chip-row" id="tagsRow"></div>
+            </div>
+
+            <div class="analysis-block">
+              <span class="eyebrow">Sentimiento</span>
+              <div class="sentiment-gauge">
+                <div class="gauge-track">
+                  <div class="gauge-marker" id="gaugeMarker" style="left:50%"></div>
+                </div>
+                <div class="gauge-labels">
+                  <span>Negativo</span>
+                  <span>Neutral</span>
+                  <span>Positivo</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="analysis-block entities-block">
+              <span class="eyebrow">Entidades</span>
+              <div class="entities-columns">
+                <div>
+                  <h4>Personas</h4>
+                  <ul id="entitiesPeople"></ul>
+                </div>
+                <div>
+                  <h4>Organizaciones</h4>
+                  <ul id="entitiesOrgs"></ul>
+                </div>
+                <div>
+                  <h4>Lugares</h4>
+                  <ul id="entitiesPlaces"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="translations-block" id="translationsBlock" hidden>
+            <span class="eyebrow">Traducciones</span>
+            <div id="translationsContainer"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="copy-toast" id="copyToast">Copiado al portapapeles</div>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

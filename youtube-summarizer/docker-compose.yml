@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: yt-summarizer-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://summarizer:summarizer@postgres:5432/summarizer
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - backend_data:/app/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: yt-summarizer-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: yt-summarizer-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: summarizer
+      POSTGRES_PASSWORD: summarizer
+      POSTGRES_DB: summarizer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U summarizer"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  backend_data:
+  postgres_data:
